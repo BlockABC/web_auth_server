@@ -1,0 +1,38 @@
+version: '3'
+
+volumes:
+  mariadb:
+    driver: local
+  redis:
+    driver: local
+
+services:
+  redis:
+    build:
+      context: ./docker/redis
+      args:
+        - REDIS_VERSION=${DOCKER_REDIS_VERSION}
+    volumes:
+      - ${DOCKER_DATA_PATH}/redis:/data
+    ports:
+      - "${DOCKER_REDIS_PORT}:6379"
+
+  mariadb:
+    build:
+      context: ./docker/mariadb
+      args:
+        - http_proxy
+        - https_proxy
+        - no_proxy
+        - MARIADB_VERSION=${DOCKER_MARIADB_VERSION}
+    volumes:
+      - ${DOCKER_DATA_PATH}/mariadb:/var/lib/mysql
+      - ${DOCKER_MARIADB_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
+    ports:
+      - "${DOCKER_MARIADB_PORT}:3306"
+    environment:
+      - TZ=${DOCKER_SERVICE_TIMEZONE}
+      - MYSQL_DATABASE=${DOCKER_MARIADB_DATABASE}
+      - MYSQL_USER=${DOCKER_MARIADB_USER}
+      - MYSQL_PASSWORD=${DOCKER_MARIADB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DOCKER_MARIADB_ROOT_PASSWORD}
