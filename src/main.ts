@@ -1,15 +1,14 @@
 import { WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
 import { NestFactory } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
-import { INestApplication, ValidationPipe } from '@nestjs/common'
+import { INestApplication, LoggerService, ValidationPipe } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
 import { configLoader } from './config'
 import { ApplicationModule } from './app.module'
+import { TwitterController } from './strategies/twitter/twitter.controller'
 
 const { hostname, port, log } = configLoader()
-
-const globalPrefix = 'api'
 
 function initSwagger (app: INestApplication): void {
   const swaggerOptions = new DocumentBuilder()
@@ -24,14 +23,14 @@ function initSwagger (app: INestApplication): void {
 }
 
 async function bootstrap () {
+  const logger: LoggerService = WinstonModule.createLogger(log)
   const appOptions = {
     cors: true,
     // Use winston logger during bootstrap and the whole app
-    logger: WinstonModule.createLogger(log),
+    logger,
   }
   const app = await NestFactory.create<NestExpressApplication>(ApplicationModule, appOptions)
 
-  app.setGlobalPrefix(globalPrefix)
   app.useGlobalPipes(new ValidationPipe({
     // https://docs.nestjs.com/techniques/validation#disable-detailed-errors
     // disableErrorMessages: true,
@@ -41,6 +40,7 @@ async function bootstrap () {
   initSwagger(app)
 
   await app.listenAsync(port, hostname)
-  console.log(`app is running on http://${hostname}:${port}/${globalPrefix}`)
+  app.get<TwitterController>(TwitterController)
+  logger.log(`app is running on http://${hostname}:${port}`)
 }
 bootstrap()

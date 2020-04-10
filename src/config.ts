@@ -1,4 +1,6 @@
+import trimEnd from 'lodash/trimEnd'
 import { format, transports, LoggerOptions } from 'winston'
+import { TypeOrmModuleOptions } from '@nestjs/typeorm'
 
 export interface Config {
   env: string,
@@ -7,8 +9,10 @@ export interface Config {
 
   log: LoggerOptions,
 
+  // Must follow options at https://github.com/expressjs/session#options
   session: {
     secret: string,
+    maxAge: number,
   },
 
   // Must follow options at https://github.com/kyknow/nestjs-redis
@@ -16,6 +20,16 @@ export interface Config {
     name?: string,
     url: string,
   }[],
+
+  // Must follow options at https://typeorm.io/#/connection-options
+  mysql: TypeOrmModuleOptions,
+
+  // Must follow options at http://www.passportjs.org/packages/passport-twitter/
+  twitter: {
+    consumerKey: string,
+    consumerSecret: string,
+    callbackURL: string,
+  },
 }
 
 export function configLoader (): Config {
@@ -25,7 +39,7 @@ export function configLoader (): Config {
     port: parseInt(process.env.PORT, 10) ?? 8080,
 
     log: {
-      level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+      level: process.env.NODE_ENV === 'production' ? 'info' : 'verbose',
       format: format.combine(
         format.label({ label: 'Main' }),
         format.timestamp(),
@@ -41,6 +55,7 @@ export function configLoader (): Config {
 
     session: {
       secret: process.env.SESSION_SECRET,
+      maxAge: 86400 * 7 * 1000,
     },
 
     redis: [
@@ -48,6 +63,12 @@ export function configLoader (): Config {
         // name: 'default',
         url: process.env.REDIS_URL,
       }
-    ]
+    ],
+
+    twitter: {
+      consumerKey: process.env.TWITTER_API_KEY,
+      consumerSecret: process.env.TWITTER_API_SECRET,
+      callbackURL: `${trimEnd(process.env.BASE_URL, '/')}/auth/twitter`
+    }
   }
 }
