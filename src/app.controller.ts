@@ -6,23 +6,18 @@ import { RedisService } from 'nestjs-redis'
 
 @Controller()
 export class AppController {
-  @Inject(WINSTON_MODULE_PROVIDER)
-  readonly logger: Logger
-
   readonly redis: Redis
 
-  constructor (redis: RedisService) {
+  constructor (
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    redis: RedisService,
+  ) {
     this.redis = redis.getClient()
   }
 
-  @Get('/')
-  root (@Session() session): string {
-    session.test = 1
-
-    this.redis.set('test:a', 1)
-
-    this.logger.info('test logger')
-
-    return 'Hello World!'
+  @Get('/ping')
+  ping (): string {
+    this.logger.info('AppController.ping response')
+    return ''
   }
 }

@@ -16,7 +16,7 @@
 ###     mysql -u root -p < /docker-entrypoint-initdb.d/createdb.sql
 ###
 
-CREATE DATABASE IF NOT EXISTS `web_auth_server` COLLATE 'utf8_general_ci' ;
+CREATE DATABASE IF NOT EXISTS `web_auth_server` COLLATE 'utf8mb4_unicode_ci' ;
 GRANT ALL ON `web_auth_server`.* TO 'default'@'%' ;
 
 FLUSH PRIVILEGES ;

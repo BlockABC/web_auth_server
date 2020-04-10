@@ -65,6 +65,21 @@ export function configLoader (): Config {
       }
     ],
 
+    mysql: {
+      type: 'mysql',
+      host: process.env.MYSQL_HOST,
+      port: parseInt(process.env.MYSQL_PORT, 10) ?? 3306,
+      username: process.env.MYSQL_USERNAME,
+      password: process.env.MYSQL_PASSWORD,
+      database: process.env.MYSQL_DATABASE,
+      charset: 'utf8mb4_unicode_ci',
+      retryAttempts: 3,
+      autoLoadEntities: true,
+      entities: [
+        'dist/**/*.entity.{ .ts,.js}',
+      ],
+    },
+
     twitter: {
       consumerKey: process.env.TWITTER_API_KEY,
       consumerSecret: process.env.TWITTER_API_SECRET,
