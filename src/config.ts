@@ -4,6 +4,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm'
 
 export interface Config {
   env: string,
+  baseUrl: string,
   hostname: string,
   port: number,
 
@@ -35,6 +36,7 @@ export interface Config {
 export function configLoader (): Config {
   return {
     env: process.env.NODE_ENV,
+    baseUrl: process.env.BASE_URL,
     hostname: process.env.HOST ?? '127.0.0.1',
     port: parseInt(process.env.PORT, 10) ?? 8080,
 
@@ -44,9 +46,11 @@ export function configLoader (): Config {
         format.label({ label: 'Main' }),
         format.timestamp(),
         format.colorize({ all: true }),
-        format.printf(({ level, message, label, timestamp }): string => {
-          return `[${timestamp}] [${level}] [${label}] ${message}`
-        })
+        format.metadata({ fillExcept: ['timestamp', 'level', 'label', 'message', 'context'] }),
+        format.printf(({ level, message, label, timestamp, context, metadata }): string => {
+          label = context ?? label
+          return `[${timestamp}] [${level}] [${label}] ${message} ${JSON.stringify(metadata)}`
+        }),
       ),
       transports: [
         new transports.Console(),
@@ -83,7 +87,7 @@ export function configLoader (): Config {
     twitter: {
       consumerKey: process.env.TWITTER_API_KEY,
       consumerSecret: process.env.TWITTER_API_SECRET,
-      callbackURL: `${trimEnd(process.env.BASE_URL, '/')}/auth/twitter`
+      callbackURL: `/auth/twitter`
     }
   }
 }

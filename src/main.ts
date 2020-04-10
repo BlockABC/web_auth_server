@@ -6,7 +6,6 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
 import { configLoader } from './config'
 import { ApplicationModule } from './app.module'
-import { TwitterController } from './strategies/twitter/twitter.controller'
 
 const { hostname, port, log } = configLoader()
 
@@ -40,7 +39,6 @@ async function bootstrap () {
   initSwagger(app)
 
   await app.listenAsync(port, hostname)
-  app.get<TwitterController>(TwitterController)
-  logger.log(`app is running on http://${hostname}:${port}`)
+  logger.log(`app is running on http://${hostname}:${port}/ping`)
 }
 bootstrap()

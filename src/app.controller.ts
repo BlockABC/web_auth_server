@@ -13,11 +13,12 @@ export class AppController {
     redis: RedisService,
   ) {
     this.redis = redis.getClient()
+    this.logger = logger.child({ context: AppController.name })
   }
 
   @Get('/ping')
   ping (): string {
-    this.logger.info('AppController.ping response')
+    this.logger.info('Pong')
     return ''
   }
 }

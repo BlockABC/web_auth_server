@@ -20,12 +20,13 @@ export class RedirectMiddleware implements NestMiddleware {
     redis: RedisService
   ) {
     this.redis = redis.getClient()
+    this.logger = logger.child({ context: RedirectMiddleware.name })
   }
 
   async use (req: Request, res: Response, next: Function): Promise<void> {
     // If found redirect url in query string, then store it in session
     if (req.query?.redirect) {
-      this.logger.verbose(`RedirectMiddleware is triggered: ${req.query.redirect}`)
+      this.logger.verbose(`Redirect url found: ${req.query.redirect}`)
       req.session.redirect = req.query.redirect
     }
 

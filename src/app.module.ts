@@ -9,7 +9,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { AppController } from './app.controller'
 
 import { configLoader } from './config'
-import { StrategiesModule } from './strategies/strategies.module'
+import { AuthModule } from './auth/auth.module'
 import { ApiModule } from './api/api.module'
 
 const RedisStore = ConnectRedis(session)
@@ -57,7 +57,7 @@ const envFilePath = envFileMap[process.env.NODE_ENV] ?? '.env'
         return config.get('mysql')
       },
     }),
-    StrategiesModule,
+    AuthModule,
     ApiModule,
   ],
   controllers: [

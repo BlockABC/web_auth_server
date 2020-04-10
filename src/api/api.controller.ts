@@ -18,6 +18,7 @@ export class ApiController {
     redis: RedisService
   ) {
     this.redis = redis.getClient()
+    this.logger = logger.child({ context: ApiController.name })
   }
 
   @Get('oauth-data')
@@ -25,6 +26,8 @@ export class ApiController {
     if (!req.query.key) {
       throw new HttpException('Param[key] is not found', HttpStatus.BAD_REQUEST)
     }
+
+    this.logger.info(`Try to retrieve OAuth data of key: ${req.query.key}`)
 
     const key = CacheKeyPrefix.Profile + req.query.key
     const data = await this.redis.get(key)
