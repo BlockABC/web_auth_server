@@ -2,16 +2,16 @@
   "name": "web_auth_server",
   "version": "0.0.1",
   "description": "An open source authentication server works with kinds of sns platforms.",
-  "author": "zgayjjf@qq.com",
+  "author": "Link <xie.al@qq.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/BlockABC/web_auth_server.git"
   },
   "bugs": {
-    "url": "https://github.com/BlockABC/blockabc_node_template/issues"
+    "url": "https://github.com/BlockABC/web_auth_server/issues"
   },
-  "homepage": "https://github.com/BlockABC/blockabc_node_template#readme",
+  "homepage": "https://github.com/BlockABC/web_auth_server",
   "main": "index.js",
   "scripts": {
     "prebuild": "rm -rf ./dist",
