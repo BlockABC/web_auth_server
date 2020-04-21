@@ -91,7 +91,7 @@ export function oauthStrategyFactory (
    */
   function prefixCallbackUrl (config: ConfigService): any {
     const strategyConfig = config.get(strategyName)
-    strategyConfig.callbackUrl = trimEnd(config.get('baseUrl'), '/') + strategyConfig.callbackUrl
+    strategyConfig.callbackURL = trimEnd(config.get('baseUrl'), '/') + strategyConfig.callbackURL
     return strategyConfig
   }
 
