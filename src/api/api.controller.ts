@@ -6,6 +6,7 @@ import { RedisService } from 'nestjs-redis'
 import { Logger } from 'winston'
 import { Controller, Get, HttpException, HttpStatus, Inject, Request } from '@nestjs/common'
 
+import { ParamError, ServerError } from '../error'
 import { CacheKeyPrefix } from '../constants'
 import { IUser } from '../strategies/interface'
 
@@ -24,7 +25,7 @@ export class ApiController {
   @Get('oauth-data')
   async index (@Request() req: Req): Promise<IUser> {
     if (!req.query.key) {
-      throw new HttpException('Param[key] is not found', HttpStatus.BAD_REQUEST)
+      throw ParamError.fromCode(10000, 'key')
     }
 
     this.logger.info(`Try to retrieve OAuth data of key: ${req.query.key}`)
@@ -32,7 +33,7 @@ export class ApiController {
     const key = CacheKeyPrefix.Profile + req.query.key
     const data = await this.redis.get(key)
     if (isNil(data)) {
-      throw new HttpException('Access denied', HttpStatus.FORBIDDEN)
+      throw ParamError.fromCode(10001, 'key')
     }
 
     let ret: IUser
@@ -40,7 +41,7 @@ export class ApiController {
       ret = JSON.parse(data) as IUser
     }
     catch (err) {
-      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR)
+      throw ServerError.fromCode(90000)
     }
 
     // Expire data after a few minutes
