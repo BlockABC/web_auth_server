@@ -41,6 +41,11 @@ yarn start
 ```
 
 
+## API
+
+API 文档在启动服务后可以通过 `http://{hostname}/docs` 进行查看，比如服务地址是 http://127.0.0.1:8080 ，那么 API 文档的就位于 http://127.0.0.1:8080/docs 。
+
+
 ## Extending Strategies
 
 首先请看下图：

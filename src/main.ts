@@ -1,4 +1,4 @@
-import { WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
+import { WinstonModule } from 'nest-winston'
 import { NestFactory } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { INestApplication, LoggerService, ValidationPipe } from '@nestjs/common'
@@ -7,18 +7,18 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { configLoader } from './config'
 import { ApplicationModule } from './app.module'
 
-const { hostname, port, log } = configLoader()
+const { hostname, port, log, swaggerPath } = configLoader()
 
 function initSwagger (app: INestApplication): void {
   const swaggerOptions = new DocumentBuilder()
-    .setTitle('NestJS Realworld Example App')
-    .setDescription('The Realworld API description')
+    .setTitle('Web Auth Server Docs')
+    .setDescription('This is the API document for Web Auth Server.')
     .setVersion('1.0')
     .addBearerAuth()
     .build()
 
   const document = SwaggerModule.createDocument(app, swaggerOptions)
-  SwaggerModule.setup('/docs', app, document)
+  SwaggerModule.setup(swaggerPath, app, document)
 }
 
 async function bootstrap () {
@@ -39,6 +39,7 @@ async function bootstrap () {
   initSwagger(app)
 
   await app.listenAsync(port, hostname)
-  logger.log(`app is running on http://${hostname}:${port}/ping`)
+  logger.log(`app is running on http://${hostname}:${port}`)
+  logger.log(`api doc is running on http://${hostname}:${port}${swaggerPath}`)
 }
 bootstrap()

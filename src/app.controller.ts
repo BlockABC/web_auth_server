@@ -1,6 +1,7 @@
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston'
 import { Logger } from 'winston'
-import { Get, Controller, Session, Inject } from '@nestjs/common'
+import { Get, Controller, Inject } from '@nestjs/common'
+import { ApiOkResponse } from '@nestjs/swagger'
 import { Redis } from 'ioredis'
 import { RedisService } from 'nestjs-redis'
 
@@ -17,6 +18,7 @@ export class AppController {
   }
 
   @Get('/ping')
+  @ApiOkResponse({ description: 'Service is online.' })
   ping (): string {
     this.logger.info('Pong')
     return ''

@@ -1,3 +1,4 @@
+import { ApiResponse } from '@nestjs/swagger'
 import trimEnd from 'lodash/trimEnd'
 import { Strategy } from 'passport'
 import { URL } from 'url'
@@ -11,7 +12,7 @@ import { Controller, Get, Inject, UseGuards, Request, Response, Type, Injectable
 import { AuthGuard, PassportStrategy } from '@nestjs/passport'
 import { ConfigService } from '@nestjs/config'
 
-import { IOAuthStrategy, IUser } from './interface'
+import { IOAuthStrategy } from './interface'
 import { CacheKeyPrefix, RandomCharset } from '../constants'
 
 /**
@@ -46,6 +47,7 @@ export function oauthStrategyControllerFactory (
 
     @UseGuards(AuthGuard(strategyName))
     @Get()
+    @ApiResponse({ status: 302, description: 'Redirect to twitter OAuth authorization.' })
     async index (@Request() req: Req, @Response() res: Res): Promise<Res<any> | void> {
       this.logger.info(`Oauth ${strategyName} done successfully.`)
       this.logger.verbose(`Oauth ${strategyName} query:`, { ...req.query })

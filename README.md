@@ -41,6 +41,11 @@ yarn start
 ```
 
 
+## API
+
+The API documentation can be viewed at `http://{hostname}/docs` after starting the service, for example the service address is http://127.0.0.1:8080, then the API documentation is located at http://127.0.0.1:8080/docs.
+
+
 ## Extending Strategies
 
 First of all, please look at the following picture:

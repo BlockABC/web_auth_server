@@ -1,4 +1,3 @@
-import trimEnd from 'lodash/trimEnd'
 import { format, transports, LoggerOptions } from 'winston'
 import { TypeOrmModuleOptions } from '@nestjs/typeorm'
 
@@ -7,6 +6,7 @@ export interface Config {
   baseUrl: string,
   hostname: string,
   port: number,
+  swaggerPath: string,
 
   log: LoggerOptions,
 
@@ -39,6 +39,7 @@ export function configLoader (): Config {
     baseUrl: process.env.BASE_URL,
     hostname: process.env.HOST ?? '127.0.0.1',
     port: parseInt(process.env.PORT, 10) ?? 8080,
+    swaggerPath: '/docs',
 
     log: {
       level: process.env.NODE_ENV === 'production' ? 'info' : 'verbose',

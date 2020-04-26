@@ -1,14 +1,26 @@
+import { ApiOkResponse, ApiProperty } from '@nestjs/swagger'
 import isNil from 'lodash/isNil'
 import { Request as Req } from 'express'
 import { Redis } from 'ioredis'
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston'
 import { RedisService } from 'nestjs-redis'
 import { Logger } from 'winston'
-import { Controller, Get, HttpException, HttpStatus, Inject, Request } from '@nestjs/common'
+import { Controller, Get, Inject, Request } from '@nestjs/common'
 
 import { ParamError, ServerError } from '../error'
 import { CacheKeyPrefix } from '../constants'
 import { IUser } from '../strategies/interface'
+
+class User implements IUser {
+  @ApiProperty({ description: 'It may be access token in some of SNS because they do not have openId or userId.' })
+  openId: string
+
+  @ApiProperty({ description: 'The username be able to display.' })
+  nickname: string
+
+  @ApiProperty({ description: 'Various user profile depending on the SNS.' })
+  profile: any
+}
 
 @Controller('api')
 export class ApiController {
@@ -23,6 +35,7 @@ export class ApiController {
   }
 
   @Get('oauth-data')
+  @ApiOkResponse({ type: User, description: 'User profile info.' })
   async index (@Request() req: Req): Promise<IUser> {
     if (!req.query.key) {
       throw ParamError.fromCode(10000, 'key')
