@@ -7,7 +7,7 @@
 
 ## Introduction
 
-Web Auth Server is a server side framework and must be used in conjunction with Web Auth Page. Web Auth Server is base on nestjs framework, it provides easy access to a variety of OAuth platforms, with comprehensive logging, caching, database services, you will be able to easily extend on this framework. Of course, it also has a built-in stategy for twitter.
+Web Auth Server is a server side framework and must be used in conjunction with Web Auth Page. Web Auth Server is base on [Nest] framework, it provides easy access to a variety of OAuth platforms, with comprehensive logging, caching, database services, you will be able to easily extend on this framework. Of course, it also has a built-in stategy for twitter.
 
 
 ## Getting started
@@ -59,7 +59,7 @@ First of all, please look at the following picture:
    |             |
 +--+-------------+--+
 |                   |
-|  Nestjs Strategy  |
+|  Nest Strategy  |
 |                   |
 +--+-------------+--+
    |             |
@@ -141,9 +141,9 @@ export const {
 
 > `IUser` is only a simple example, feel free to modify it to what you want.
 
-### Step 3，register Strategy in nestjs
+### Step 3，register Strategy in [Nest]
 
-Nestjs requires all dependent modules to be registered statically in advance for runtime management through the IOC container, so here we need to register the `controller` and `strategy` created by `strategyFactory` in `src/auth/auth.module.ts` :
+[Nest] requires all dependent modules to be registered statically in advance for runtime management through the IOC container, so here we need to register the `controller` and `strategy` created by `strategyFactory` in `src/auth/auth.module.ts` :
 
 ```typescript
 import { MiddlewareConsumer, Module } from '@nestjs/common'
@@ -204,6 +204,24 @@ docker-compose up
 
 > If you choose this Docker deployment scenario directly in a production environment, be sure to remember to configure the firewall! Stop remote access to port 6379 for Redis and port 3306 for MariaDB, otherwise **you'll be at risk of a data breach!**
 
+### Launch Development Mode
+
+```shell
+# First you need copy and rename .env.example
+cp .env.example .env
+
+# Configure the environment variables in the .env file according to your server environment
+vim .env
+
+# Lanuch development mode
+
+npm run start:dev
+
+# Or
+
+yarn start:dev
+```
+
 ### Code Style
 
 We use a little tweaked version of standardjs: https://github.com/BlockABC/eslint-config-blockabc
@@ -217,3 +235,6 @@ Please feel free to submit your questions at [Issure](https://github.com/BlockAB
 ## License
 
 [MIT](LICENSE)
+
+
+[Nest]: https://nestjs.com/
