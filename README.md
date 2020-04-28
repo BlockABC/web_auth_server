@@ -7,43 +7,40 @@
 
 ## Introduction
 
-Web Auth Server is a server side framework and must be used in conjunction with Web Auth Page. Web Auth Server is base on [Nest] framework, it provides easy access to a variety of OAuth platforms, with comprehensive logging, caching, database services, you will be able to easily extend on this framework. Of course, it also has a built-in stategy for twitter.
+Web Auth Server is a server side framework and must be used in conjunction with [Web Auth Page]. Web Auth Server is base on [Nest] framework, it provides easy access to a variety of OAuth platforms, with comprehensive logging, caching, database services, you will be able to easily extend on this framework. Of course, it also has a built-in stategy for twitter.
 
 
 ## Getting started
 
-### Environment Build
+### Environment Construction
 
 You need to set up the following services in the environment and make sure they are working properly:
 
 - Redis
 - Mysql or MariaDB
+- Nodejs
 
-If you are not familiar with these two backend services and you are not ready to hire professional programers to deploy them, then see the section [Development > Environment Build](#development), I provide a out-of-the-box Docker solution that is suitable for experimental, smaller scale applications where you can increase the load limit by simply boosting a single server resources.
+If you are not familiar with Redis, MySQL, MariaDB and you are not ready to hire professional programers to deploy them, then see the section [Development > Environment Build](#development), I provide a out-of-the-box Docker solution that is suitable for experimental, smaller scale applications where you can increase the load limit by simply boosting a single server resources.
+
+Please go to official document for how to install Nodejs: https://nodejs.org/en/download/package-manager
+
+### Environment Variables
+
+You can configure environment variables in any familiar way, such as CI and [PM2] both have their own environment variable configuration methods, except that you can use [dotenv](https://github.com/motdotla/dotenv) provided by [Nest]. Copy and rename the `.env.example` from the project directory to `.env` and configure it as needed.
 
 ### Launch Service
 
-The service can be launched in a few simple steps:
-
 ```shell
-git clone https://github.com/BlockABC/web_auth_server.git
-
-cp .env.example .env
-
-# Configure the environment variables in the .env file according to your server environment
-vim .env
-
+npm install --only=prod
 npm run start
-
-# Or
-
-yarn start
 ```
+
+> This is only the simplest way to start a service, and we prefer to use cluster mode of [PM2] to start and manage processes in a production environment.
 
 
 ## API
 
-The API documentation can be viewed at `http://{hostname}/docs` after starting the service, for example the service address is http://127.0.0.1:8080, then the API documentation is located at http://127.0.0.1:8080/docs.
+The service provides several HTTP protocol API for [Web Auth Page], and the documentation can be viewed at `http://{hostname}/docs` after starting the service, for example the service address is http://127.0.0.1:8080, then the API documentation is located at http://127.0.0.1:8080/docs.
 
 
 ## Extending Strategies
@@ -172,11 +169,12 @@ That is all.
 
 ## Development
 
-### Environment Build
+### Environment Construction
 
 I recommand to use Docker to maintain a simple local environment, this project contains a [docker-compose.yml](docker-compose.yml) configuration file, after installing Docker you can simply start/stop the services using the following commands：
 
 ```shell
+# first you must go to the directory where docker-compose.yml is located
 git clone https://github.com/BlockABC/web_auth_server.git
 cd web_auth_server
 
@@ -193,7 +191,7 @@ If need to modify configuration of Redis or MariaDB, please edit the relevant fi
 # stop services and remove containers
 docker-compose down
 
-# Or
+# or
 
 # remove stopped containers
 docker-compose rm
@@ -204,22 +202,15 @@ docker-compose up
 
 > If you choose this Docker deployment scenario directly in a production environment, be sure to remember to configure the firewall! Stop remote access to port 6379 for Redis and port 3306 for MariaDB, otherwise **you'll be at risk of a data breach!**
 
+### Environment Variables
+
+[Nest] provides [dotenv](https://github.com/motdotla/dotenv) to manage environment variables, copy and rename the `.env.example` from the project root directory to `.env` and configure it as needed.
+
 ### Launch Development Mode
 
 ```shell
-# First you need copy and rename .env.example
-cp .env.example .env
-
-# Configure the environment variables in the .env file according to your server environment
-vim .env
-
-# Lanuch development mode
-
+npm install
 npm run start:dev
-
-# Or
-
-yarn start:dev
 ```
 
 ### Code Style
@@ -229,7 +220,7 @@ We use a little tweaked version of standardjs: https://github.com/BlockABC/eslin
 
 ## Issues
 
-Please feel free to submit your questions at [Issure](https://github.com/BlockABC/web_auth_server/issues).
+Please feel free to submit your questions at [Issues](https://github.com/BlockABC/web_auth_server/issues).
 
 
 ## License
@@ -237,4 +228,6 @@ Please feel free to submit your questions at [Issure](https://github.com/BlockAB
 [MIT](LICENSE)
 
 
+[Web Auth Page]: https://github.com/BlockABC/web_auth_page/
 [Nest]: https://nestjs.com/
+[PM2]: https://pm2.keymetrics.io/

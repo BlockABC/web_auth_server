@@ -7,7 +7,7 @@
 
 ## Introduction
 
-Web Auth Server 是 Web Auth 框架的服务端，必须配合 Web Auth Page 一起使用。Web Auth Server 利用 [Nest] 框架提供了方便接入各种 OAuth 平台的接口，并带有完善的日志、缓存、数据库服务，你将能够方便的在这套框架上进行扩展。当然，它还内置了一个开箱即用的 twitter 平台接入方案。
+Web Auth Server 是 Web Auth 框架的服务端，必须配合 [Web Auth Page] 一起使用。Web Auth Server 利用 [Nest] 框架提供了方便接入各种 OAuth 平台的接口，并带有完善的日志、缓存、数据库服务，你将能够方便的在这套框架上进行扩展。当然，它还内置了一个开箱即用的 twitter 平台接入方案。
 
 
 ## Getting started
@@ -18,35 +18,32 @@ Web Auth Server 是 Web Auth 框架的服务端，必须配合 Web Auth Page 一
 
 - Redis
 - Mysql or MariaDB
+- Nodejs
 
-如果你不熟悉这两个后端服务，并且你还不准备雇佣专业的技术人员来部署它们，那请参见 [Development > 环境搭建](#development) 一节，本框架提供了了一个基于 Docker 的快速解决方案，这种部署方式适用于实验性的、较小规模的应用，你可以通过简单的提升单一服务器配置来提高负载上限。
+如果你不熟悉 Redis, MySQL, MariaDB 这些后端服务，并且你还不准备雇佣专业的技术人员来部署它们，那请参见 [Development > 环境搭建](#development) 一节，本框架提供了了一个基于 Docker 的快速解决方案，这种部署方式适用于实验性的、较小规模的应用，你可以通过简单的提升单一服务器配置来提高负载上限。
+
+Nodejs 的安装方式详见官方文档: https://nodejs.org/en/download/package-manager
+
+### 配置环境变量
+
+你可以通过任何熟悉的方式来配置环境变量，比如 CI 和 [PM2] 都有自己的环境变量配置方式，除此以外可以使用 [Nest] 提供的 [dotenv](https://github.com/motdotla/dotenv) 配置方式。将项目根目录下的 `.env.example` 复制并重命名为 `.env` ，然后按需配置即可。
 
 ### 启动服务
 
-通过以下简单几步就可以启动本服务了：
-
 ```shell
-git clone https://github.com/BlockABC/web_auth_server.git
-
-cp .env.example .env
-
-# 根据你的服务器环境配置 .env 文件中的环境变量
-vim .env
-
+npm install --only=prod
 npm run start
-
-# 或
-
-yarn start
 ```
+
+> 这只是最简单的启动服务的方式，我们更推荐使用 [PM2] 以 cluster 模式启动并管理生产环境中的进程。
 
 
 ## API
 
-API 文档在启动服务后可以通过 `http://{hostname}/docs` 进行查看，比如服务地址是 http://127.0.0.1:8080 ，那么 API 文档的就位于 http://127.0.0.1:8080/docs 。
+本服务为 [Web Auth Page] 提供了几个 HTTP 协议的 API，文档在启动服务后可以通过 `http://{hostname}/docs` 进行查看，比如服务地址是 http://127.0.0.1:8080 ，那么 API 文档的就位于 http://127.0.0.1:8080/docs 。
 
 
-## Extending Strategies
+## 扩充自定义 Strategy
 
 首先请看下图：
 
@@ -177,6 +174,7 @@ export class AuthModule {
 我推荐使用 Docker 来维护一个简单的本地环境，项目内部内置了一个 [docker-compose.yml](docker-compose.yml) 配置文件，安装 Docker 之后你就可以简单的使用以下命令来启动/停止服务：
 
 ```shell
+# 首先必须进入 docker-compose.yml 所在目录
 git clone https://github.com/BlockABC/web_auth_server.git
 cd web_auth_server
 
@@ -204,22 +202,15 @@ docker-compose up
 
 > 如果你在生产环境直接使用这个 Docker 部署方案，请务必记得配置防火墙！禁止远程访问 Redis 的 6379 端口和 MariaDB 的 3306 端口，否则**你将面对数据泄漏的风险！**
 
+### 配置环境变量
+
+[Nest] 提供了 [dotenv](https://github.com/motdotla/dotenv) 来管理环境变量，复制粘贴并重命名项目根目录下的 `.env.example` 为 `.env`，然后按需配置即可。
+
 ### 启动开发模式
 
 ```shell
-# 首先你需要复制并重命名 .env.example
-cp .env.example .env
-
-# 根据你的服务器环境配置 .env 文件中的环境变量
-vim .env
-
-# 启动开发模式
-
+npm install
 npm run start:dev
-
-# 或
-
-yarn start:dev
 ```
 
 ### 代码风格
@@ -229,7 +220,7 @@ yarn start:dev
 
 ## Issues
 
-请随意地前往 [Issure](https://github.com/BlockABC/web_auth_server/issues) 提出你的问题。
+请随意地前往 [Issues](https://github.com/BlockABC/web_auth_server/issues) 提出你的问题。
 
 
 ## License
@@ -237,4 +228,6 @@ yarn start:dev
 [MIT](LICENSE)
 
 
+[Web Auth Page]: https://github.com/BlockABC/web_auth_page/
 [Nest]: https://nestjs.com/
+[PM2]: https://pm2.keymetrics.io/
