@@ -31,6 +31,16 @@ export interface Config {
     consumerSecret: string,
     callbackURL: string,
   },
+
+  // Must follow options at https://github.com/IvanWei/passport-line-auth/#options
+  line: {
+    channelID: string,
+    channelSecret: string,
+    callbackURL: string,
+    scope: string[],
+    botPrompt?: string,
+    uiLocales?: string,
+  },
 }
 
 export function configLoader (): Config {
@@ -89,6 +99,13 @@ export function configLoader (): Config {
       consumerKey: process.env.TWITTER_API_KEY,
       consumerSecret: process.env.TWITTER_API_SECRET,
       callbackURL: `/auth/twitter`
+    },
+
+    line: {
+      channelID: process.env.LINE_CHANNEL_ID,
+      channelSecret: process.env.LINE_CHANNEL_SECRET,
+      callbackURL: '/auth/line',
+      scope: ['profile', 'openid', 'email'],
     }
   }
 }
