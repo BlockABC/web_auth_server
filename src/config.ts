@@ -1,5 +1,57 @@
+import { ConfigModule } from '@nestjs/config'
 import { format, transports, LoggerOptions } from 'winston'
+import { Format } from 'logform'
 import { TypeOrmModuleOptions } from '@nestjs/typeorm'
+
+/**
+ * Load different dotenv files in different environments, we use multiple path so they are extended one by one:
+ *
+ * **The leftmost has the highest priority.**
+ */
+const envFileMap = {
+  development: ['.env', '.development.env', '.testing.env', '.production.env'],
+  testing: ['.env', '.testing.env', '.production.env'],
+  // jest will set NODE_ENV to 'test' automatically
+  test: ['.env', '.testing.env', '.production.env'], // Alias of testing
+  production: ['.env', '.production.env'],
+}
+const envFilePath = envFileMap[process.env.NODE_ENV] ?? '.env'
+// console.debug(process.env.NODE_ENV, envFilePath)
+
+/**
+ * Log format generator
+ *
+ * @param color
+ * @return {Format}
+ */
+function genLogFormat (color = false): Format {
+  const formatters = [
+    format.label({ label: 'Main' }),
+    format.timestamp(),
+    format.metadata({ fillExcept: ['timestamp', 'level', 'label', 'message', 'context', 'trace', 'stack'] }),
+  ]
+
+  let logFormat: Format
+  if (color) {
+    logFormat = format.combine(
+      ...formatters,
+      format.colorize({ all: true }),
+      format.printf(({ level, message, label, timestamp, context, metadata, trace, stack }): string => {
+        label = context ?? label
+        trace = trace || stack
+        return `[${timestamp}] [${level}] [${label}] ${message} ${JSON.stringify(metadata)}` + (trace ? `\n${trace.toString()}` : '')
+      }),
+    )
+  }
+  else {
+    logFormat = format.combine(
+      ...formatters,
+      format.json(),
+    )
+  }
+
+  return logFormat
+}
 
 export interface Config {
   env: string,
@@ -52,17 +104,8 @@ export function configLoader (): Config {
     swaggerPath: '/docs',
 
     log: {
-      level: process.env.NODE_ENV === 'production' ? 'info' : 'verbose',
-      format: format.combine(
-        format.label({ label: 'Main' }),
-        format.timestamp(),
-        format.colorize({ all: true }),
-        format.metadata({ fillExcept: ['timestamp', 'level', 'label', 'message', 'context'] }),
-        format.printf(({ level, message, label, timestamp, context, metadata }): string => {
-          label = context ?? label
-          return `[${timestamp}] [${level}] [${label}] ${message} ${JSON.stringify(metadata)}`
-        }),
-      ),
+      level: process.env.LOG_LEVEL,
+      format: genLogFormat(process.env.LOG_COLOR === 'true'),
       transports: [
         new transports.Console(),
       ]
@@ -98,7 +141,7 @@ export function configLoader (): Config {
     twitter: {
       consumerKey: process.env.TWITTER_API_KEY,
       consumerSecret: process.env.TWITTER_API_SECRET,
-      callbackURL: `/auth/twitter`
+      callbackURL: '/auth/twitter'
     },
 
     line: {
@@ -109,3 +152,9 @@ export function configLoader (): Config {
     }
   }
 }
+
+export const configModule = ConfigModule.forRoot({
+  isGlobal: true, // No need to import ConfigModule everywhere
+  envFilePath,
+  load: [configLoader],
+})

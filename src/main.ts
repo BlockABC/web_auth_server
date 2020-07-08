@@ -5,7 +5,7 @@ import { INestApplication, LoggerService, ValidationPipe } from '@nestjs/common'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
 import { configLoader } from './config'
-import { ApplicationModule } from './app.module'
+import { AppModule } from './app.module'
 
 const { hostname, port, log, swaggerPath } = configLoader()
 
@@ -28,7 +28,7 @@ async function bootstrap () {
     // Use winston logger during bootstrap and the whole app
     logger,
   }
-  const app = await NestFactory.create<NestExpressApplication>(ApplicationModule, appOptions)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, appOptions)
 
   app.useGlobalPipes(new ValidationPipe({
     // https://docs.nestjs.com/techniques/validation#disable-detailed-errors
