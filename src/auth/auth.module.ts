@@ -1,16 +1,20 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common'
 
 import { RedirectMiddleware } from './redirect.middleware'
-import { TwitterStrategy, TwitterStrategyController } from '../strategies/twitter.strategy'
-import { LineStrategy, LineStrategyController } from '../strategies/line.strategy'
+import {
+  TwitterStrategy,
+  TwitterStrategyController,
+  LineStrategy,
+  LineStrategyController,
+} from '../strategies'
 
 @Module({
   providers: [
-    // LineStrategy,
+    LineStrategy,
     TwitterStrategy,
   ],
   controllers: [
-    // LineStrategyController,
+    LineStrategyController,
     TwitterStrategyController,
   ]
 })
