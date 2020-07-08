@@ -1,11 +1,10 @@
 import { ApiOkResponse, ApiProperty } from '@nestjs/swagger'
 import isNil from 'lodash/isNil'
-import { Request as Req } from 'express'
 import { Redis } from 'ioredis'
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston'
 import { RedisService } from 'nestjs-redis'
 import { Logger } from 'winston'
-import { Controller, Get, Inject, Request } from '@nestjs/common'
+import { Controller, Get, Inject, Query } from '@nestjs/common'
 
 import { ParamError, ServerError } from '../error'
 import { CacheKeyPrefix } from '../constants'
@@ -36,14 +35,14 @@ export class ApiController {
 
   @Get('oauth-data')
   @ApiOkResponse({ type: User, description: 'User profile info.' })
-  async index (@Request() req: Req): Promise<IUser> {
-    if (!req.query.key) {
+  async index (@Query() query: { key: string }): Promise<IUser> {
+    if (!query.key) {
       throw ParamError.fromCode(10000, 'key')
     }
 
-    this.logger.info(`Try to retrieve OAuth data of key: ${req.query.key}`)
+    this.logger.info(`Try to retrieve OAuth data of key: ${query.key}`)
 
-    const key = CacheKeyPrefix.Profile + req.query.key
+    const key = CacheKeyPrefix.Profile + query.key
     const data = await this.redis.get(key)
     if (isNil(data)) {
       throw ParamError.fromCode(10001, 'key')
