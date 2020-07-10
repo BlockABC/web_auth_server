@@ -26,7 +26,7 @@ Please go to official document for how to install Nodejs: https://nodejs.org/en/
 
 ### Environment Variables
 
-You can configure environment variables in any familiar way, such as CI and [PM2] both have their own environment variable configuration methods, except that you can use [dotenv](https://github.com/motdotla/dotenv) provided by [Nest]. Copy and rename the `.env.example` from the project directory to `.env` and configure it as needed.
+You can configure environment variables in any familiar way, such as CI and [PM2] both have their own environment variable configuration methods, except that you can use [dotenv](https://github.com/motdotla/dotenv) provided by [Nest].
 
 ### Launch Service
 
@@ -109,31 +109,51 @@ export function configLoader (): Config {
 
 ### Second step，create strategy
 
-You need to create `{name}.strategy.ts` in `src/strategies` directory：
+You need to create directory of your strategy in `src/strategies`, the name of directory should be the same as
+strategy's name, and two files in the directory：
+
+The first is `{name}.strategy.ts`：
 
 ```typescript
 // import the passportjs strategy you want, the passport-twitter here is an example
 import { Profile, Strategy } from 'passport-twitter'
+// More other imports ...
 
-// import `strategyFactory` method to help you create controller class and strategy class
-import { strategyFactory } from './factory'
-import { IOAuthStrategy, IUser } from './interface'
+// Strategy name, must be the same as src/config.ts
+export const STRATEGY_NAME = 'twitter'
 
-export const {
-  // strategyFactory will always return an object contains a controller class and a strategy class, here I rename them with destructuring
-  controller: TwitterStrategyController,
-  strategy: TwitterStrategy,
-} = strategyFactory({
-  // strategy name, must be the same as src/config.ts
-  strategyName: 'twitter',
-  // pass into the strategy class you choosed from passportjs
-  passportStrategyClass: Strategy,
+// OAuthStrategy is a base class generator from `src/strategies/common`
+@Injectable()
+export class TwitterStrategy extends OAuthStrategy(Strategy, STRATEGY_NAME) {
+  constructor (config: ConfigService, @Inject(WINSTON_MODULE_PROVIDER) logger: Logger) {
+    super(config, logger)
+  }
+
   // customize your verify callback, must return a user object contains data what frontend expected
-  validateFunc: async function (this: IOAuthStrategy, accessToken: string, accessTokenSecret: string, profile: Profile, done: (error: any, user?: any) => void): Promise<IUser> {
+  async validate (accessToken: string, accessTokenSecret: string, profile: Profile, done: (error: any, user?: any) => void): Promise<IUser> {
     // construct your user object, if you want it to be abstruct you can implement IUser interface
+    const user: IUser = {
+      openId: accessToken,
+      nickname: profile._json.name,
+      profile: profile._json,
+    }
+
+    done(null, user)
     return user
   }
-})
+}
+```
+
+The second is `{name}.strategy.controller.ts`:
+
+```typescript
+// This controller is mainly for define the OAuth callback route
+@Controller(`auth/${STRATEGY_NAME}`)
+export class TwitterStrategyController extends OAuthStrategyController(STRATEGY_NAME) {
+  constructor (redis: RedisService, @Inject(WINSTON_MODULE_PROVIDER) logger: Logger) {
+    super(redis, logger)
+  }
+}
 ```
 
 > `IUser` is only a simple example, feel free to modify it to what you want.
@@ -204,7 +224,15 @@ docker-compose up
 
 ### Environment Variables
 
-[Nest] provides [dotenv](https://github.com/motdotla/dotenv) to manage environment variables, copy and rename the `.env.example` from the project root directory to `.env` and configure it as needed.
+[Nest] provides [dotenv](https://github.com/motdotla/dotenv) to manage environment variables, and thanks to [Nest]'s
+support for multiple dotenv files, we can add different dotenv files for different environments without repeat the same
+variables again and again:
+
+- when `NODE_ENV === production`, dotenv loading order is `['.env', '.production.env']`
+- when `NODE_ENV === testing`, dotenv loading order is `['.env', '.testing.env', '.production.env']`
+- when `NODE_ENV === development`, dotenv loading order is `['.env', '.development.env', '.testing.env', '.production.env']`
+
+> All files will be loaded, variables in earlier files will overwrite later ones.
 
 ### Launch Development Mode
 

@@ -26,7 +26,7 @@ Nodejs 的安装方式详见官方文档: https://nodejs.org/en/download/package
 
 ### 配置环境变量
 
-你可以通过任何熟悉的方式来配置环境变量，比如 CI 和 [PM2] 都有自己的环境变量配置方式，除此以外可以使用 [Nest] 提供的 [dotenv](https://github.com/motdotla/dotenv) 配置方式。将项目根目录下的 `.env.example` 复制并重命名为 `.env` ，然后按需配置即可。
+你可以通过任何熟悉的方式来配置环境变量，比如 CI 和 [PM2] 都有自己的环境变量配置方式，除此以外可以使用 [Nest] 提供的 [dotenv](https://github.com/motdotla/dotenv) 配置方式。
 
 ### 启动服务
 
@@ -109,31 +109,50 @@ export function configLoader (): Config {
 
 ### 第二步，创建 Strategy
 
-你需要在 `src/strategies` 下创建你的 `{name}.strategy.ts` 文件：
+你需要在 `src/strategies` 下创建你的 strategy 目录，目录名建议和 strategy 名一致，目录中需要创建两个文件：
+
+首先是 `{name}.strategy.ts`：
 
 ```typescript
 // import 你想要使用的 passportjs strategy，比如本框架中自带的 twitter 示例
 import { Profile, Strategy } from 'passport-twitter'
+// 更多其他的 imports ...
 
-// 然后引入 strategyFactory 方法来帮你快速创建 controller 类和 strategy 类
-import { strategyFactory } from './factory'
-import { IOAuthStrategy, IUser } from './interface'
+// Strategy 名称，必须和 src/config.ts 中一致
+export const STRATEGY_NAME = 'twitter'
 
-export const {
-  // strategyFactory 总是返回一个包含 controller 和 strategy 的对象，通过解构赋值我们可以对其重命名并导出
-  controller: TwitterStrategyController,
-  strategy: TwitterStrategy,
-} = strategyFactory({
-  // Strategy 名称，必须和 src/config.ts 中一致
-  strategyName: 'twitter',
-  // 指明你所使用的 passportjs 的 Strategy 类
-  passportStrategyClass: Strategy,
+// OAuthStrategy 是来自 `src/strategies/common` 的基类生成函数
+@Injectable()
+export class TwitterStrategy extends OAuthStrategy(Strategy, STRATEGY_NAME) {
+  constructor (config: ConfigService, @Inject(WINSTON_MODULE_PROVIDER) logger: Logger) {
+    super(config, logger)
+  }
+
   // 自定义你的 verify callback 函数，必须返回一个对象，这个对象就是你期望的用户相关信息
-  validateFunc: async function (this: IOAuthStrategy, accessToken: string, accessTokenSecret: string, profile: Profile, done: (error: any, user?: any) => void): Promise<IUser> {
+  async validate (accessToken: string, accessTokenSecret: string, profile: Profile, done: (error: any, user?: any) => void): Promise<IUser> {
     // 构建你自己的 user 对象，如果希望跨平台的兼容性，可以实现 IUser 标准
+    const user: IUser = {
+      openId: accessToken,
+      nickname: profile._json.name,
+      profile: profile._json,
+    }
+
+    done(null, user)
     return user
   }
-})
+}
+```
+
+其次是 `{name}.strategy.controller.ts`:
+
+```typescript
+// 这个 controller 仅仅是为了明确 OAuth 的回调路由
+@Controller(`auth/${STRATEGY_NAME}`)
+export class TwitterStrategyController extends OAuthStrategyController(STRATEGY_NAME) {
+  constructor (redis: RedisService, @Inject(WINSTON_MODULE_PROVIDER) logger: Logger) {
+    super(redis, logger)
+  }
+}
 ```
 
 > `IUser` 仅仅是一个最简单的示例，请随意的按照自己的需要修改吧。
@@ -147,7 +166,7 @@ import { MiddlewareConsumer, Module } from '@nestjs/common'
 
 import { RedirectMiddleware } from './redirect.middleware'
 // import 你的 controller 和 strategy
-import { TwitterStrategy, TwitterStrategyController } from '../strategies/twitter.strategy'
+import { TwitterStrategy, TwitterStrategyController } from '../strategies'
 
 @Module({
   providers: [
@@ -204,7 +223,14 @@ docker-compose up
 
 ### 配置环境变量
 
-[Nest] 提供了 [dotenv](https://github.com/motdotla/dotenv) 来管理环境变量，复制粘贴并重命名项目根目录下的 `.env.example` 为 `.env`，然后按需配置即可。
+[Nest] 提供了 [dotenv](https://github.com/motdotla/dotenv) 来管理环境变量，并且得益于 [Nest] 支持多 dotenv 文件，所以我们可以在不同环
+境使用不同的 dotenv 文件且无需重复不需要覆盖的变量：
+
+- `NODE_ENV === production` 时，dotenv 加载顺序为 `['.env', '.production.env']`
+- `NODE_ENV === testing` 时，dotenv 加载顺序为 `['.env', '.testing.env', '.production.env']`
+- `NODE_ENV === development` 时，dotenv 加载顺序为 `['.env', '.development.env', '.testing.env', '.production.env']`
+
+> 所有文件都会被加载，靠前的文件里的变量会覆盖靠后的。
 
 ### 启动开发模式
 
