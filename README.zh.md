@@ -190,13 +190,16 @@ export class AuthModule {
 
 ### 环境搭建
 
-我推荐使用 Docker 来维护一个简单的本地环境，项目内部内置了一个 [docker-compose.yml](docker-compose.yml) 配置文件，安装 Docker 之后你就可以简单的使用以下命令来启动/停止服务：
+我推荐使用 Docker 来维护一个简单的本地环境，借助 [docker-compose.yml](docker-compose.yml) 配置文件它能帮你立即做到这点。想要使用 Docker 我们首先需要完成以下几个准备工作：
+
+1. [安装 Docker](https://docs.docker.com/get-docker/) 。
+2. [docker-compose.yml](docker-compose.yml) 中有一些类似 `${...}` 的环境变量可以配置，我们需要将 [docker/docker.env](docker/docker.env) 复制粘贴到项目根目录下的 `.env` 中，docker 会自动从其中获取
+环境变量。
+3. `cd web_auth_server` 进入 [docker-compose.yml](docker-compose.yml) 所在的目录。
+
+现在，你就可以使用下面命令来启动本地环境了：
 
 ```shell
-# 首先必须进入 docker-compose.yml 所在目录
-git clone https://github.com/BlockABC/web_auth_server.git
-cd web_auth_server
-
 # 启动服务
 docker-compose up
 

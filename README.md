@@ -191,13 +191,15 @@ That is all.
 
 ### Environment Construction
 
-I recommand to use Docker to maintain a simple local environment, this project contains a [docker-compose.yml](docker-compose.yml) configuration file, after installing Docker you can simply start/stop the services using the following commands：
+I recommand to use Docker to maintain a simple local environment, with the help of config file [docker-compose.yml](docker-compose.yml) you can do it in a breeze. But a few preparation works need to be done:
+
+1. [Get Docker](https://docs.docker.com/get-docker/) 。
+2. Copy [docker/docker.env](docker/docker.env) to project root directory, and then rename it to `.env`. There are some environment variables in [docker-compose.yml](docker-compose.yml) looks like `${...}`, Docker will try to load them from `.env` by default.
+3. `cd web_auth_server`, enter the directory where [docker-compose.yml](docker-compose.yml) exists.
+
+Now, you can start local environment with the following commands:
 
 ```shell
-# first you must go to the directory where docker-compose.yml is located
-git clone https://github.com/BlockABC/web_auth_server.git
-cd web_auth_server
-
 # start services
 docker-compose up
 
