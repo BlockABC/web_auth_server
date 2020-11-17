@@ -1,13 +1,13 @@
+import { Controller, Get, Inject, Query } from '@nestjs/common'
 import { ApiOkResponse, ApiProperty } from '@nestjs/swagger'
-import isNil from 'lodash/isNil'
 import { Redis } from 'ioredis'
+import isNil from 'lodash/isNil'
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston'
 import { RedisService } from 'nestjs-redis'
 import { Logger } from 'winston'
-import { Controller, Get, Inject, Query } from '@nestjs/common'
+import { CacheKeyPrefix, ParamErrorCode, ServerErrorCode } from '../constants'
 
 import { ParamError, ServerError } from '../error'
-import { CacheKeyPrefix } from '../constants'
 import { IUser } from '../strategies/interface'
 
 class User implements IUser {
@@ -37,7 +37,7 @@ export class ApiController {
   @ApiOkResponse({ type: User, description: 'User profile info.' })
   async index (@Query() query: { key: string }): Promise<IUser> {
     if (!query.key) {
-      throw ParamError.fromCode(10000, 'key')
+      throw ParamError.fromCode(ParamErrorCode.Required, 'key')
     }
 
     this.logger.info(`Try to retrieve OAuth data of key: ${query.key}`)
@@ -45,7 +45,7 @@ export class ApiController {
     const key = CacheKeyPrefix.Profile + query.key
     const data = await this.redis.get(key)
     if (isNil(data)) {
-      throw ParamError.fromCode(10001, 'key')
+      throw ParamError.fromCode(ParamErrorCode.KeyNotExist, 'key')
     }
 
     let ret: IUser
@@ -53,7 +53,7 @@ export class ApiController {
       ret = JSON.parse(data) as IUser
     }
     catch (err) {
-      throw ServerError.fromCode(90000)
+      throw ServerError.fromCode(ServerErrorCode.CacheDataCorrupted)
     }
 
     // Expire data after a few minutes

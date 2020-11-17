@@ -4,7 +4,7 @@ import { WinstonModule } from 'nest-winston'
 import { RedisService } from 'nestjs-redis'
 
 import { configLoader, configModule } from '../config'
-import { CacheKeyPrefix } from '../constants'
+import { CacheKeyPrefix, ParamErrorCode, ServerErrorCode } from '../constants'
 import { IUser } from '../strategies/interface'
 import { redisMockProvider } from '../test-helper'
 import { ApiController } from './api.controller'
@@ -42,27 +42,28 @@ describe('ApiController', () => {
     it('should should throw 10000 if query string invalid', async () => {
       const query = {}
       // @ts-ignore
-      await expect(controller.index(<any>query)).rejects.toThrowParamError(10000)
+      await expect(controller.index(query)).rejects.toThrowParamError(ParamErrorCode.Required)
     })
 
     it('should should throw 10001 if cache not found', async () => {
       const query = { key: 'unittest' }
-      // @ts-ignore
-      await expect(controller.index(<any>query)).rejects.toThrowParamError(10001)
+      //@ts-ignore
+      await expect(controller.index(query)).rejects.toThrowParamError(ParamErrorCode.KeyNotExist)
     })
 
     it('should should throw 90000 if cache is not valid JSON', async () => {
       const query = { key: 'unittest' }
       await redis.set(CacheKeyPrefix.Profile + query.key, 'xxxxxx')
-      // @ts-ignore
-      await expect(controller.index(<any>query)).rejects.toThrowParamError(90000)
+      //@ts-ignore
+      await expect(controller.index(query)).rejects.toThrowServerError(ServerErrorCode.CacheDataCorrupted)
     })
 
     it('should return object implement IUser', async () => {
       const query = { key: 'unittest' }
+      // store user data in cache first
       await redis.set(CacheKeyPrefix.Profile + query.key, JSON.stringify(user))
-      // @ts-ignore
-      await expect(controller.index(<any>query)).resolves.toEqual(expect.objectContaining({
+
+      await expect(controller.index(query)).resolves.toEqual(expect.objectContaining({
         openId: expect.any(String),
         nickname: expect.any(String),
         profile: expect.anything(),

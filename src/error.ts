@@ -1,11 +1,12 @@
 import { HttpException, HttpStatus } from '@nestjs/common'
+import { ParamErrorCode, ServerErrorCode } from './constants'
 
 import { hasKey } from './helper'
 
 export class ParamError extends HttpException {
   static readonly messages = {
-    10000: 'Param[{name}] is required.',
-    10001: 'Can not find data with Param[{name}].',
+    [ParamErrorCode.Required]: 'Param[{name}] is required.',
+    [ParamErrorCode.KeyNotExist]: 'Can not find data with Param[{name}].',
   }
 
   readonly name = 'ParamError'
@@ -28,7 +29,7 @@ export class ParamError extends HttpException {
 
 export class ServerError extends HttpException {
   static readonly messages = {
-    90000: 'Parse cached data failed.',
+    [ServerErrorCode.CacheDataCorrupted]: 'Parse cached data failed.',
   }
 
   readonly name = 'ServerError'
@@ -39,8 +40,8 @@ export class ServerError extends HttpException {
     this.code = code
   }
 
-  static fromCode (code: number): ParamError {
+  static fromCode (code: number): ServerError {
     const message = hasKey(ServerError.messages, code) ? ServerError.messages[code] : 'Undefined error code'
-    return new ParamError(code, message)
+    return new ServerError(code, message)
   }
 }
