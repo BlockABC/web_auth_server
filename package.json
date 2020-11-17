@@ -44,7 +44,7 @@
     "@types/node": "^13.9.8",
     "@types/passport": "^1.0.3",
     "@types/passport-twitter": "^1.0.34",
-    "class-transformer": "^0.3.1",
+    "class-transformer": "^0.3.0",
     "class-validator": "^0.12.2",
     "connect-redis": "^4.0.4",
     "cross-env": "^7.0.2",

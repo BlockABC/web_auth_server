@@ -3,6 +3,7 @@ node_modules/
 coverage/
 .idea/
 data/
+.yarn/*
 
 .env
 package-lock.json
