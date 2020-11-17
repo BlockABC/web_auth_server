@@ -27,7 +27,7 @@ export function OAuthStrategyController (strategyName?: string | undefined) {
     @UseGuards(AuthGuard(strategyName))
     @Get()
     @ApiResponse({ status: 302, description: 'Redirect to twitter OAuth authorization.' })
-    async index (@Request() req: Req, @Response() res: Res): Promise<Res<any> | void> {
+    async index (@Request() req: Req, @Response() res: Res): Promise<Res<any> | any> {
       this.logger.info(`Oauth ${strategyName} done successfully.`)
       this.logger.verbose(`Oauth ${strategyName} query string:`, { ...req.query })
 

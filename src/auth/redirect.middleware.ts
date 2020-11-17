@@ -26,7 +26,7 @@ export class RedirectMiddleware implements NestMiddleware {
   async use (req: Request, res: Response, next: Function): Promise<void> {
     // If found redirect url in query string, then store it in session
     if (req.query?.redirect) {
-      this.logger.verbose(`Redirect url found: ${req.query.redirect}`)
+      this.logger.verbose(`Redirect url found: ${req.query.redirect as string}`)
       req.session.redirect = req.query.redirect
     }
 

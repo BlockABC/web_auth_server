@@ -21,7 +21,7 @@ function initSwagger (app: INestApplication): void {
   SwaggerModule.setup(swaggerPath, app, document)
 }
 
-async function bootstrap () {
+async function bootstrap (): Promise<void> {
   const logger: LoggerService = WinstonModule.createLogger(log)
   const appOptions = {
     cors: true,
@@ -42,4 +42,6 @@ async function bootstrap () {
   logger.log(`app is running on http://${hostname}:${port}`)
   logger.log(`api doc is running on http://${hostname}:${port}${swaggerPath}`)
 }
-bootstrap()
+bootstrap().catch(err => {
+  throw err
+})

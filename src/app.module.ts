@@ -3,9 +3,9 @@ import session from 'express-session'
 import { Module } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { WinstonModule } from 'nest-winston'
-import { RedisModule, RedisModuleOptions, RedisService } from 'nestjs-redis'
+import { RedisModule, RedisService } from 'nestjs-redis'
 import { SessionModule, NestSessionOptions } from 'nestjs-session'
-import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { AppController } from './app.controller'
 
 import { configLoader, configModule } from './config'
@@ -21,7 +21,7 @@ const RedisStore = ConnectRedis(session)
     configModule,
     RedisModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: async (config: ConfigService): Promise<RedisModuleOptions> => {
+      useFactory: async (config: ConfigService): Promise<any> => {
         return config.get('redis')
       },
     }),
@@ -41,7 +41,7 @@ const RedisStore = ConnectRedis(session)
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: async (config: ConfigService): Promise<TypeOrmModuleOptions> => {
+      useFactory: async (config: ConfigService): Promise<any> => {
         return config.get('mysql')
       },
     }),

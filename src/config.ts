@@ -69,10 +69,10 @@ export interface Config {
   },
 
   // Must follow options at https://github.com/kyknow/nestjs-redis
-  redis: {
+  redis: Array<{
     name?: string,
     url: string,
-  }[],
+  }>,
 
   // Must follow options at https://typeorm.io/#/connection-options
   mysql: TypeOrmModuleOptions,
