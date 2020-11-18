@@ -1,8 +1,10 @@
 # Web Auth Server
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![unittest](https://github.com/BlockABC/web_auth_server/workflows/unittest/badge.svg)](/BlockABC/web_auth_server/actions)
+<a href="https://discord.gg/8WGxH4cgXp"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Chat"></a>
 
-[README](README.md) | [中文文档](README.zh.md)
+[README](README.md) | [中文文档](doc/zh-cn/README.zh.md)
 
 
 ## Introduction
@@ -10,7 +12,7 @@
 Web Auth Server is a server side framework and must be used in conjunction with [Web Auth Page]. Web Auth Server is base on [Nest] framework, it provides easy access to a variety of OAuth platforms, with comprehensive logging, caching, database services, you will be able to easily extend on this framework. Of course, it also has a built-in stategy for twitter.
 
 
-## Getting started
+## Quick start
 
 ### Environment Construction
 
@@ -38,214 +40,12 @@ npm run start
 > This is only the simplest way to start a service, and we prefer to use cluster mode of [PM2] to start and manage processes in a production environment.
 
 
-## API
+## Document
 
-The service provides several HTTP protocol API for [Web Auth Page], and the documentation can be viewed at `http://{hostname}/docs` after starting the service, for example the service address is http://127.0.0.1:8080, then the API documentation is located at http://127.0.0.1:8080/docs.
+- [Contributing Guide](doc/en/contributing.md)
+- [Custom Strategies](doc/en/custom-strategies.md)
 
-
-## Extending Strategies
-
-First of all, please look at the following picture:
-
-```
-+-------------------+
-|                   |
-|  Custom Strategy  |
-|                   |
-+--+-------------+--+
-   |             |
-+--+-------------+--+
-|                   |
-|  Nest Strategy  |
-|                   |
-+--+-------------+--+
-   |             |
-+--+-------------+----+
-|                     |
-| Passportjs Strategy |
-|                     |
-+---------------------+
-```
-
-This framework actually leverages the **Strategy** concept and interface in [passportjs](http://www.passportjs.org/), so customizing **Strategy** is actually calling **Strategy** in passportjs. This makes it easy for users to support [500+ of Strategy](http://www.passportjs.org/packages/), which includes community like Facebook, Google, Reddit, Github, Wechat, and more!
-
-Next, let's look at how to expand your own Strategy:
-
-### First step, add configuration
-
-We need to add ApiKey, ApiSecret and other information in `src/config.ts` to customize the strategy, what we actually needed could be found from document of passportjs strategies. For example, I find three required params from document of [passport-twitter](https://github.com/jaredhanson/passport-twitter):
-
-- consumerKey
-- consumerSecret
-- callbackURL
-
-So we add the following keys to `src/config.ts`:
-
-```typescript
-export interface Config {
-  ... // some other code
-
-  // type declaration
-  twitter: {
-    consumerKey: string,
-    consumerSecret: string,
-    callbackURL: string,
-  },
-}
-
-export function configLoader (): Config {
-  return {
-    ... // some other code
-
-    // twitter strategy params
-    twitter: { // this key is the global name of strategy, I will name it to strategyName in code below
-      consumerKey: process.env.TWITTER_API_KEY, // assign actual value from process.env
-      consumerSecret: process.env.TWITTER_API_SECRET,
-      callbackURL: '/auth/twitter' // callback url will be `config.baseUrl + config.twitter.callbackURL`
-    }
-  }
-}
-```
-
-### Second step，create strategy
-
-You need to create directory of your strategy in `src/strategies`, the name of directory should be the same as
-strategy's name, and two files in the directory：
-
-The first is `{name}.strategy.ts`：
-
-```typescript
-// import the passportjs strategy you want, the passport-twitter here is an example
-import { Profile, Strategy } from 'passport-twitter'
-// More other imports ...
-
-// Strategy name, must be the same as src/config.ts
-export const STRATEGY_NAME = 'twitter'
-
-// OAuthStrategy is a base class generator from `src/strategies/common`
-@Injectable()
-export class TwitterStrategy extends OAuthStrategy(Strategy, STRATEGY_NAME) {
-  constructor (config: ConfigService, @Inject(WINSTON_MODULE_PROVIDER) logger: Logger) {
-    super(config, logger)
-  }
-
-  // customize your verify callback, must return a user object contains data what frontend expected
-  async validate (accessToken: string, accessTokenSecret: string, profile: Profile, done: (error: any, user?: any) => void): Promise<IUser> {
-    // construct your user object, if you want it to be abstruct you can implement IUser interface
-    const user: IUser = {
-      openId: accessToken,
-      nickname: profile._json.name,
-      profile: profile._json,
-    }
-
-    done(null, user)
-    return user
-  }
-}
-```
-
-The second is `{name}.strategy.controller.ts`:
-
-```typescript
-// This controller is mainly for define the OAuth callback route
-@Controller(`auth/${STRATEGY_NAME}`)
-export class TwitterStrategyController extends OAuthStrategyController(STRATEGY_NAME) {
-  constructor (redis: RedisService, @Inject(WINSTON_MODULE_PROVIDER) logger: Logger) {
-    super(redis, logger)
-  }
-}
-```
-
-> `IUser` is only a simple example, feel free to modify it to what you want.
-
-### Step 3，register Strategy in [Nest]
-
-[Nest] requires all dependent modules to be registered statically in advance for runtime management through the IOC container, so here we need to register the `controller` and `strategy` created by `strategyFactory` in `src/auth/auth.module.ts` :
-
-```typescript
-import { MiddlewareConsumer, Module } from '@nestjs/common'
-
-import { RedirectMiddleware } from './redirect.middleware'
-// import your controller and strategy
-import { TwitterStrategy, TwitterStrategyController } from '../strategies/twitter.strategy'
-
-@Module({
-  providers: [
-    // register strategy
-    TwitterStrategy,
-  ],
-  controllers: [
-    // register controler
-    TwitterStrategyController,
-  ]
-})
-export class AuthModule {
-  ...
-}
-```
-
-That is all.
-
-
-## Development
-
-### Environment Construction
-
-I recommand to use Docker to maintain a simple local environment, with the help of config file [docker-compose.yml](docker-compose.yml) you can do it in a breeze. But a few preparation works need to be done:
-
-1. [Get Docker](https://docs.docker.com/get-docker/) 。
-2. Copy [docker/docker.env](docker/docker.env) to project root directory, and then rename it to `.env`. There are some environment variables in [docker-compose.yml](docker-compose.yml) looks like `${...}`, Docker will try to load them from `.env` by default.
-3. `cd web_auth_server`, enter the directory where [docker-compose.yml](docker-compose.yml) exists.
-
-Now, you can start local environment with the following commands:
-
-```shell
-# start services
-docker-compose up
-
-# stop services
-docker-compose stop
-```
-
-If need to modify configuration of Redis or MariaDB, please edit the relevant files in the `docker/` directory, then recreate the Docker [containers](https://www.docker.com/resources/what-container)：
-
-```shell
-# stop services and remove containers
-docker-compose down
-
-# or
-
-# remove stopped containers
-docker-compose rm
-
-# at last, start services, containers will be created if not exist
-docker-compose up
-```
-
-> If you choose this Docker deployment scenario directly in a production environment, be sure to remember to configure the firewall! Stop remote access to port 6379 for Redis and port 3306 for MariaDB, otherwise **you'll be at risk of a data breach!**
-
-### Environment Variables
-
-[Nest] provides [dotenv](https://github.com/motdotla/dotenv) to manage environment variables, and thanks to [Nest]'s
-support for multiple dotenv files, we can add different dotenv files for different environments without repeat the same
-variables again and again:
-
-- when `NODE_ENV === production`, dotenv loading order is `['.env', '.production.env']`
-- when `NODE_ENV === testing`, dotenv loading order is `['.env', '.testing.env', '.production.env']`
-- when `NODE_ENV === development`, dotenv loading order is `['.env', '.development.env', '.testing.env', '.production.env']`
-
-> All files will be loaded, variables in earlier files will overwrite later ones.
-
-### Launch Development Mode
-
-```shell
-npm install
-npm run start:dev
-```
-
-### Code Style
-
-We use a little tweaked version of standardjs: https://github.com/BlockABC/eslint-config-blockabc
+The service provides several HTTP protocol API for [Web Auth Page], and the documentation can be viewed at `http://{hostname}/docs` after starting the service, for example the default service address is http://127.0.0.1:8080, then the API documentation is located at http://127.0.0.1:8080/docs.
 
 
 ## Issues
