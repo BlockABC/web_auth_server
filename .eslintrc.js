@@ -3,7 +3,7 @@ module.exports = {
     'blockabc/typescript'
   ],
   parserOptions: {
-    project: './tsconfig.build.json'
+    project: ['./tsconfig.json', './tsconfig.eslint.json']
   },
   rules: {
     'no-useless-constructor': 0,
