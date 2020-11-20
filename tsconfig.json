@@ -14,10 +14,10 @@
     "allowJs": true,
     "outDir": "./dist"
   },
-    "include": [
+  "include": [
     "src/**/*"
   ],
-    "exclude": [
+  "exclude": [
     "node_modules",
     "**/*.spec.ts"
   ]

@@ -1,4 +1,9 @@
 dist/
 node_modules/
+coverage/
 .idea/
-logs/
+data/
+.yarn/*
+
+.env
+package-lock.json

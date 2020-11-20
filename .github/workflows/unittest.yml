@@ -1,0 +1,64 @@
+name: unittest
+on:
+  push:
+    branches-ignore: ['main', 'master', 'ci']
+env:
+  PROJECT_NAME: web_auth_server
+jobs:
+  build:
+    if: "! contains(github.event.head_commit.message, '[skip-ci]')"
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12'
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Create/Restore cache for npm
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
+      - run: zip -qry ${{ env.PROJECT_NAME }}.zip .
+
+      - name: Upload code to Github artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.PROJECT_NAME }}
+          path: ${{ env.PROJECT_NAME }}.zip
+
+  test:
+    if: "! contains(github.event.head_commit.message, '[skip-ci]')"
+    name: Unit Test
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [ '12', '14' ]
+    steps:
+      - name: Download code from Github artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.PROJECT_NAME }}
+
+      - run: unzip -oq ${{ env.PROJECT_NAME }}.zip
+      - run: yarn test
+
+  clean:
+    if: "! contains(github.event.head_commit.message, '[skip-ci]')"
+    name: Clean expired artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove old artifacts
+        uses: c-hive/gha-remove-artifacts@v1
+        with:
+          age: '3 hours'
