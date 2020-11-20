@@ -1,6 +1,6 @@
 {
   "name": "web_auth_server",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "An open source authentication server works with kinds of sns platforms.",
   "author": "Link <xie.al@qq.com>",
   "license": "MIT",
@@ -13,6 +13,9 @@
   },
   "homepage": "https://github.com/BlockABC/web_auth_server",
   "main": "index.js",
+  "engines": {
+    "node": ">=12"
+  },
   "scripts": {
     "prebuild": "shx rm -rf ./dist",
     "build": "cross-env NODE_ENV=production nest build",
@@ -72,6 +75,7 @@
     "eslint-config-blockabc": "^0.11.0",
     "ioredis-mock": "^4.21.1",
     "jest": "^25.2.4",
+    "semantic-release": "^17.2.4",
     "supertest": "^4.0.2",
     "ts-jest": "^25.3.0",
     "ts-node": "^8.8.1"

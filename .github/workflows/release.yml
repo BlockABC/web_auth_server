@@ -1,0 +1,38 @@
+name: release
+on:
+  push:
+    branches: ['main', 'master', 'ci']
+env:
+  PROJECT_NAME: web_auth_server
+jobs:
+  release:
+    if: "! contains(github.event.head_commit.message, '[skip-ci]')"
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12'
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v2
+        with:
+          semantic_version: 17.2.4
+          extra_plugins: |
+            @semantic-release/changelog@5.0.1
+            @semantic-release/git@9.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.SR_TOKEN }}
+
+  clean:
+    name: Clean expired artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove old artifacts
+        uses: c-hive/gha-remove-artifacts@v1
+        with:
+          age: '3 hours'
